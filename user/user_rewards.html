@@ -1,0 +1,1515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoWaste - Rewards</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f8fafb;
+            color: #2c3e50;
+            overflow-x: hidden;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(to right, #106f38, #007200);
+            color: white;
+            position: fixed;
+            height: 100vh;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            box-shadow: 2px 0 15px rgba(0,0,0,0.1);
+        }
+
+        .sidebar.collapsed {
+            width: 70px;
+        }
+
+        .sidebar-header {
+            padding: 25px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i {
+            font-size: 28px;
+        }
+
+        .collapse-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+            margin-left: auto;
+        }
+
+        .collapse-btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            position: relative;
+            gap: 15px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .menu-item:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .menu-item.active {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            border-right: 4px solid #fff;
+        }
+
+        .menu-item i {
+            font-size: 18px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar.collapsed .menu-item span {
+            display: none;
+        }
+
+        .sidebar.collapsed .logo span {
+            display: none;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.expanded {
+            margin-left: 70px;
+        }
+
+        /* Top Navigation */
+        .top-nav {
+            background: white;
+            padding: 15px 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            padding: 8px 15px;
+            border-radius: 25px;
+            transition: background 0.3s ease;
+            position: relative;
+        }
+
+        .user-profile:hover {
+            background: #f8f9fa;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .user-info h4 {
+            font-size: 14px;
+            color: #2c3e50;
+        }
+
+        .user-info p {
+            font-size: 12px;
+            color: #27ae60;
+            font-weight: 600;
+        }
+
+        /* Dashboard Content */
+        .dashboard-content {
+            padding: 30px;
+        }
+
+        /* Page Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .breadcrumbs {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .breadcrumb-item {
+            color: #7f8c8d;
+        }
+
+        .breadcrumb-item.active {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .action-btn-header {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .action-btn-header:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.3);
+        }
+
+        .points-btn {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+
+        .points-btn:hover {
+            box-shadow: 0 10px 25px rgba(243, 156, 18, 0.3);
+        }
+
+        /* Rewards Overview */
+        .rewards-overview {
+            background: linear-gradient(135deg, #f39c12 0%, #d68910 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .rewards-overview::before {
+            content: '🏆';
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            font-size: 120px;
+            opacity: 0.1;
+        }
+
+        .rewards-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .rewards-title {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .rewards-subtitle {
+            opacity: 0.9;
+            margin-bottom: 25px;
+        }
+
+        .points-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+        }
+
+        .points-stat {
+            text-align: center;
+        }
+
+        .points-stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .points-stat-label {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        /* Conversion Options */
+        .conversion-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .conversion-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .conversion-card {
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .conversion-card:hover {
+            border-color: #f39c12;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .conversion-card.disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .conversion-card.disabled:hover {
+            transform: none;
+            border-color: #e9ecef;
+        }
+
+        .conversion-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 15px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+
+        .icon-voucher { background: linear-gradient(135deg, #3498db, #2980b9); }
+        .icon-tax { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+        .icon-cashback { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+
+        .conversion-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .conversion-rate {
+            color: #f39c12;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .conversion-description {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .conversion-btn {
+            background: #f39c12;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .conversion-btn:hover {
+            background: #e67e22;
+        }
+
+        .conversion-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        /* Partners Section */
+        .partners-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+
+        .partners-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .partner-card {
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .partner-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+
+        .partner-header {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .partner-logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .logo-apex { background: linear-gradient(135deg, #1e3a8a, #3b82f6); }
+        .logo-gp { background: linear-gradient(135deg, #059669, #10b981); }
+        .logo-uber { background: linear-gradient(135deg, #1f2937, #374151); }
+        .logo-foodpanda { background: linear-gradient(135deg, #ec4899, #f97316); }
+        .logo-bkash { background: linear-gradient(135deg, #dc2626, #ef4444); }
+        .logo-robi { background: linear-gradient(135deg, #7c3aed, #a855f7); }
+
+        .partner-info h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 4px;
+        }
+
+        .partner-info p {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .partner-body {
+            padding: 20px;
+        }
+
+        .offer-banner {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .offer-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .points-required {
+            background: #e9ecef;
+            color: #2c3e50;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .discount-amount {
+            color: #27ae60;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .partner-description {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .redeem-btn {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .redeem-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+        }
+
+        .redeem-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .coming-soon {
+            background: #6c757d;
+        }
+
+        .coming-soon:hover {
+            background: #5a6268;
+            transform: none;
+        }
+
+        /* My Vouchers Section */
+        .vouchers-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        .voucher-card {
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .voucher-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .voucher-info {
+            flex: 1;
+        }
+
+        .voucher-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 4px;
+        }
+
+        .voucher-code {
+            color: #f39c12;
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .voucher-expiry {
+            color: #7f8c8d;
+            font-size: 12px;
+        }
+
+        .voucher-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .voucher-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+        }
+
+        .voucher-btn:hover {
+            background: #2980b9;
+        }
+
+        .use-btn {
+            background: #27ae60;
+        }
+
+        .use-btn:hover {
+            background: #229954;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            padding: 25px 30px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #7f8c8d;
+            padding: 5px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            background: #f8f9fa;
+            color: #e74c3c;
+        }
+
+        .modal-body {
+            padding: 0 30px 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #e0e6ed;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #f39c12;
+            box-shadow: 0 0 0 3px rgba(243, 156, 18, 0.1);
+        }
+
+        .conversion-summary {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            font-weight: 600;
+            color: #f39c12;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 30px;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(243, 156, 18, 0.3);
+        }
+
+        /* Mobile Responsive */
+        .mobile-menu-btn {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.mobile-open {
+                transform: translateX(0);
+                width: 280px;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .main-content.expanded {
+                margin-left: 0;
+            }
+
+            .dashboard-content {
+                padding: 15px;
+            }
+
+            .points-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .conversion-options {
+                grid-template-columns: 1fr;
+            }
+
+            .partners-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .voucher-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .voucher-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+                background: none;
+                border: none;
+                color: #2c3e50;
+                font-size: 20px;
+                cursor: pointer;
+                padding: 5px;
+                border-radius: 5px;
+                margin-right: 15px;
+            }
+
+            .mobile-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 999;
+            }
+
+            .mobile-overlay.active {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-leaf"></i>
+                    <span>EcoWaste</span>
+                </div>
+                <button class="collapse-btn" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <nav class="sidebar-menu">
+                <div class="menu-item" onclick="window.location.href='user.html'">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </div>
+                <div class="menu-item" onclick="window.location.href='pickup.html'">
+                    <i class="fas fa-calendar-plus"></i>
+                    <span>Schedule Pickup</span>
+                </div>
+                <div class="menu-item" onclick="window.location.href='pickup.html'">
+                    <i class="fas fa-box"></i>
+                    <span>My Pickups</span>
+                </div>
+                <div class="menu-item active">
+                    <i class="fas fa-coins"></i>
+                    <span>Rewards</span>
+                </div>
+                <div class="menu-item" onclick="window.location.href='history_impact_page.html'">
+                    <i class="fas fa-chart-line"></i>
+                    <span>History & Impact</span>
+                </div>
+                <div class="menu-item" onclick="window.location.href='#'">
+                    <i class="fas fa-headset"></i>
+                    <span>Support</span>
+                </div>
+                <div class="menu-item" onclick="window.location.href='dashboard.html'">
+                    <i class="fas fa-recycle"></i>
+                    <span>Admin Dashboard</span>
+                </div>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content" id="mainContent">
+            <!-- Top Navigation -->
+            <div class="top-nav">
+                <div style="display: flex; align-items: center;">
+                    <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="nav-title">Rewards</h1>
+                </div>
+                <div class="user-profile">
+                    <div class="user-avatar">RK</div>
+                    <div class="user-info">
+                        <h4>Rashid Khan</h4>
+                        <p>2,450 Points</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Content -->
+            <div class="dashboard-content">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="breadcrumbs">
+                        <span class="breadcrumb-item">Dashboard</span>
+                        <i class="fas fa-chevron-right"></i>
+                        <span class="breadcrumb-item active">Rewards</span>
+                    </div>
+                    <div class="quick-actions">
+                        <button class="action-btn-header points-btn" onclick="viewPointsHistory()">
+                            <i class="fas fa-history"></i> Points History
+                        </button>
+                        <button class="action-btn-header" onclick="howToEarn()">
+                            <i class="fas fa-question-circle"></i> How to Earn
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Rewards Overview -->
+                <div class="rewards-overview">
+                    <div class="rewards-content">
+                        <h2 class="rewards-title">Your Reward Points 🏆</h2>
+                        <p class="rewards-subtitle">Earn points by recycling and redeem them for amazing rewards!</p>
+                        <div class="points-stats">
+                            <div class="points-stat">
+                                <div class="points-stat-value" id="currentPoints">2,450</div>
+                                <div class="points-stat-label">Current Points</div>
+                            </div>
+                            <div class="points-stat">
+                                <div class="points-stat-value" id="totalEarned">4,680</div>
+                                <div class="points-stat-label">Total Earned</div>
+                            </div>
+                            <div class="points-stat">
+                                <div class="points-stat-value" id="totalRedeemed">2,230</div>
+                                <div class="points-stat-label">Total Redeemed</div>
+                            </div>
+                            <div class="points-stat">
+                                <div class="points-stat-value" id="nextReward">50</div>
+                                <div class="points-stat-label">Points to Next Reward</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Conversion Options -->
+                <div class="conversion-section">
+                    <h2 class="section-title">
+                        <i class="fas fa-exchange-alt"></i>
+                        Convert Your Points
+                    </h2>
+                    <div class="conversion-options">
+                        <div class="conversion-card" onclick="openConversionModal('voucher')">
+                            <div class="conversion-icon icon-voucher">
+                                <i class="fas fa-ticket-alt"></i>
+                            </div>
+                            <h3 class="conversion-title">Discount Vouchers</h3>
+                            <div class="conversion-rate">10 points = ৳1 discount</div>
+                            <p class="conversion-description">Convert points to discount vouchers for partner brands</p>
+                            <button class="conversion-btn">Convert Now</button>
+                        </div>
+
+                        <div class="conversion-card" onclick="openConversionModal('tax')">
+                            <div class="conversion-icon icon-tax">
+                                <i class="fas fa-receipt"></i>
+                            </div>
+                            <h3 class="conversion-title">Tax Waiver Certificate</h3>
+                            <div class="conversion-rate">500 points = ৳50 tax waiver</div>
+                            <p class="conversion-description">Get tax waiver certificates for environmental contribution</p>
+                            <button class="conversion-btn">Get Certificate</button>
+                        </div>
+
+                        <div class="conversion-card disabled">
+                            <div class="conversion-icon icon-cashback">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                            <h3 class="conversion-title">Direct Cashback</h3>
+                            <div class="conversion-rate">20 points = ৳1 cashback</div>
+                            <p class="conversion-description">Direct money transfer to your mobile wallet (Coming Soon)</p>
+                            <button class="conversion-btn" disabled>Coming Soon</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Partner Offers -->
+                <div class="partners-section">
+                    <h2 class="section-title">
+                        <i class="fas fa-handshake"></i>
+                        Partner Offers
+                    </h2>
+                    <div class="partners-grid">
+                        <!-- Apex Footwear -->
+                        <div class="partner-card" onclick="viewPartnerOffer('apex')">
+                            <div class="partner-header">
+                                <div class="partner-logo logo-apex">APEX</div>
+                                <div class="partner-info">
+                                    <h3>Apex Footwear</h3>
+                                    <p>Footwear & Accessories</p>
+                                </div>
+                            </div>
+                            <div class="partner-body">
+                                <div class="offer-banner">
+                                    20% OFF on all products
+                                </div>
+                                <div class="offer-details">
+                                    <span class="points-required">200 points</span>
+                                    <span class="discount-amount">Up to ৳500 off</span>
+                                </div>
+                                <p class="partner-description">
+                                    Get exclusive discounts on shoes, bags, and accessories from Bangladesh's leading footwear brand.
+                                </p>
+                                <button class="redeem-btn" onclick="event.stopPropagation(); redeemOffer('apex', 200)">
+                                    Redeem Now
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Grameenphone -->
+                        <div class="partner-card" onclick="viewPartnerOffer('gp')">
+                            <div class="partner-header">
+                                <div class="partner-logo logo-gp">GP</div>
+                                <div class="partner-info">
+                                    <h3>Grameenphone</h3>
+                                    <p>Mobile Network</p>
+                                </div>
+                            </div>
+                            <div class="partner-body">
+                                <div class="offer-banner">
+                                    ৳50 Mobile Recharge
+                                </div>
+                                <div class="offer-details">
+                                    <span class="points-required">300 points</span>
+                                    <span class="discount-amount">৳50 credit</span>
+                                </div>
+                                <p class="partner-description">
+                                    Convert your eco-points to mobile credit and stay connected while helping the environment.
+                                </p>
+                                <button class="redeem-btn" onclick="event.stopPropagation(); redeemOffer('gp', 300)">
+                                    Redeem Now
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Uber -->
+                        <div class="partner-card" onclick="viewPartnerOffer('uber')">
+                            <div class="partner-header">
+                                <div class="partner-logo logo-uber">UBER</div>
+                                <div class="partner-info">
+                                    <h3>Uber</h3>
+                                    <p>Transportation</p>
+                                </div>
+                            </div>
+                            <div class="partner-body">
+                                <div class="offer-banner">
+                                    ৳100 Ride Credit
+                                </div>
+                                <div class="offer-details">
+                                    <span class="points-required">400 points</span>
+                                    <span class="discount-amount">৳100 off rides</span>
+                                </div>
+                                <p class="partner-description">
+                                    Get ride credits for Uber trips. Perfect for eco-friendly transportation around the city.
+                                </p>
+                                <button class="redeem-btn" onclick="event.stopPropagation(); redeemOffer('uber', 400)">
+                                    Redeem Now
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Foodpanda -->
+                        <div class="partner-card" onclick="viewPartnerOffer('foodpanda')">
+                            <div class="partner-header">
+                                <div class="partner-logo logo-foodpanda">FP</div>
+                                <div class="partner-info">
+                                    <h3>Foodpanda</h3>
+                                    <p>Food Delivery</p>
+                                </div>
+                            </div>
+                            <div class="partner-body">
+                                <div class="offer-banner">
+                                    25% OFF on orders
+                                </div>
+                                <div class="offer-details">
+                                    <span class="points-required">250 points</span>
+                                    <span class="discount-amount">Up to ৳300 off</span>
+                                </div>
+                                <p class="partner-description">
+                                    Enjoy delicious meals with eco-friendly discounts. Valid on orders above ৳500.
+                                </p>
+                                <button class="redeem-btn" onclick="event.stopPropagation(); redeemOffer('foodpanda', 250)">
+                                    Redeem Now
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- bKash -->
+                        <div class="partner-card" onclick="viewPartnerOffer('bkash')">
+                            <div class="partner-header">
+                                <div class="partner-logo logo-bkash">bKash</div>
+                                <div class="partner-info">
+                                    <h3>bKash</h3>
+                                    <p>Mobile Financial Service</p>
+                                </div>
+                            </div>
+                            <div class="partner-body">
+                                <div class="offer-banner">
+                                    Cashback on Transactions
+                                </div>
+                                <div class="offer-details">
+                                    <span class="points-required">150 points</span>
+                                    <span class="discount-amount">2% cashback</span>
+                                </div>
+                                <p class="partner-description">
+                                    Get cashback vouchers for bKash transactions. Valid for next 5 transactions.
+                                </p>
+                                <button class="redeem-btn coming-soon" onclick="event.stopPropagation();" disabled>
+                                    Coming Soon
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Robi -->
+                        <div class="partner-card" onclick="viewPartnerOffer('robi')">
+                            <div class="partner-header">
+                                <div class="partner-logo logo-robi">ROBI</div>
+                                <div class="partner-info">
+                                    <h3>Robi Axiata</h3>
+                                    <p>Mobile Network</p>
+                                </div>
+                            </div>
+                            <div class="partner-body">
+                                <div class="offer-banner">
+                                    Internet Package
+                                </div>
+                                <div class="offer-details">
+                                    <span class="points-required">180 points</span>
+                                    <span class="discount-amount">1GB Data</span>
+                                </div>
+                                <p class="partner-description">
+                                    Get free internet packages and stay connected. Valid for 7 days activation.
+                                </p>
+                                <button class="redeem-btn coming-soon" onclick="event.stopPropagation();" disabled>
+                                    Coming Soon
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- My Vouchers -->
+                <div class="vouchers-section">
+                    <h2 class="section-title">
+                        <i class="fas fa-ticket-alt"></i>
+                        My Vouchers
+                    </h2>
+                    <div id="vouchersContainer">
+                        <div class="voucher-card">
+                            <div class="voucher-info">
+                                <div class="voucher-title">Apex Footwear - 20% OFF</div>
+                                <div class="voucher-code">Code: ECO20APEX</div>
+                                <div class="voucher-expiry">Expires: December 31, 2024</div>
+                            </div>
+                            <div class="voucher-actions">
+                                <button class="voucher-btn" onclick="copyVoucherCode('ECO20APEX')">Copy Code</button>
+                                <button class="voucher-btn use-btn" onclick="useVoucher('ECO20APEX')">Use Now</button>
+                            </div>
+                        </div>
+
+                        <div class="voucher-card">
+                            <div class="voucher-info">
+                                <div class="voucher-title">Grameenphone - ৳50 Credit</div>
+                                <div class="voucher-code">Code: GP50ECO24</div>
+                                <div class="voucher-expiry">Expires: November 30, 2024</div>
+                            </div>
+                            <div class="voucher-actions">
+                                <button class="voucher-btn" onclick="copyVoucherCode('GP50ECO24')">Copy Code</button>
+                                <button class="voucher-btn use-btn" onclick="useVoucher('GP50ECO24')">Use Now</button>
+                            </div>
+                        </div>
+
+                        <div class="voucher-card">
+                            <div class="voucher-info">
+                                <div class="voucher-title">Tax Waiver Certificate</div>
+                                <div class="voucher-code">Certificate: TWC-2024-0158</div>
+                                <div class="voucher-expiry">Valid for: Tax Year 2024</div>
+                            </div>
+                            <div class="voucher-actions">
+                                <button class="voucher-btn" onclick="downloadCertificate('TWC-2024-0158')">Download</button>
+                                <button class="voucher-btn use-btn" onclick="viewCertificate('TWC-2024-0158')">View Details</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobileOverlay" onclick="closeMobileMenu()"></div>
+
+    <!-- Conversion Modal -->
+    <div class="modal-overlay" id="conversionModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="conversionModalTitle">Convert Points</h2>
+                <button class="modal-close" onclick="closeConversionModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Conversion Type</label>
+                    <input type="text" class="form-input" id="conversionType" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Amount to Convert</label>
+                    <input type="number" class="form-input" id="conversionAmount" placeholder="Enter amount" min="1" onchange="calculateConversion()">
+                </div>
+                <div class="form-group" id="mobileNumberGroup" style="display: none;">
+                    <label class="form-label">Mobile Number</label>
+                    <input type="tel" class="form-input" id="mobileNumber" placeholder="+880 1712-345678">
+                </div>
+                <div class="conversion-summary" id="conversionSummary" style="display: none;">
+                    <h4 style="margin-bottom: 15px; color: #2c3e50;">Conversion Summary</h4>
+                    <div class="summary-row">
+                        <span>Amount:</span>
+                        <span id="summaryAmount">-</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Points Required:</span>
+                        <span id="summaryPoints">-</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>You Will Get:</span>
+                        <span id="summaryResult">-</span>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-secondary" onclick="closeConversionModal()">Cancel</button>
+                    <button class="btn-primary" id="confirmConversionBtn" onclick="confirmConversion()" disabled>Confirm Conversion</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let userPoints = 2450;
+        let currentConversionType = '';
+        
+        // Conversion rates
+        const conversionRates = {
+            voucher: 10, // 10 points = ৳1
+            tax: 10,     // 10 points = ৳1 (minimum 500 points)
+            cashback: 20 // 20 points = ৳1
+        };
+
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            
+            sidebar.classList.toggle('mobile-open');
+            overlay.classList.toggle('active');
+        }
+
+        function closeMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            
+            sidebar.classList.remove('mobile-open');
+            overlay.classList.remove('active');
+        }
+
+        // Sidebar Toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        }
+
+        // Navigation functions
+        function showSection(section) {
+            alert(`${section.replace('-', ' ')} section would load here.`);
+        }
+
+        function viewPointsHistory() {
+            alert('Points history would show detailed earning and spending log.');
+        }
+
+        function howToEarn() {
+            alert('How to earn points guide:\n\n• Plastic waste: 15 pts/kg\n• Paper waste: 10 pts/kg\n• E-waste: 50 pts/kg\n• Metal waste: 25 pts/kg\n• Glass waste: 12 pts/kg\n• Organic waste: 8 pts/kg\n\nBonus points for regular pickups!');
+        }
+
+        // Conversion Modal Functions
+        function openConversionModal(type) {
+            currentConversionType = type;
+            const modal = document.getElementById('conversionModal');
+            const title = document.getElementById('conversionModalTitle');
+            const typeInput = document.getElementById('conversionType');
+            const mobileGroup = document.getElementById('mobileNumberGroup');
+            
+            const typeNames = {
+                voucher: 'Discount Voucher',
+                tax: 'Tax Waiver Certificate',
+                cashback: 'Direct Cashback'
+            };
+            
+            title.textContent = `Convert to ${typeNames[type]}`;
+            typeInput.value = typeNames[type];
+            
+            // Show mobile number field for cashback and some vouchers
+            if (type === 'cashback') {
+                mobileGroup.style.display = 'block';
+            } else {
+                mobileGroup.style.display = 'none';
+            }
+            
+            // Reset form
+            document.getElementById('conversionAmount').value = '';
+            document.getElementById('conversionSummary').style.display = 'none';
+            document.getElementById('confirmConversionBtn').disabled = true;
+            
+            modal.classList.add('active');
+        }
+
+        function closeConversionModal() {
+            document.getElementById('conversionModal').classList.remove('active');
+        }
+
+        function calculateConversion() {
+            const amount = parseFloat(document.getElementById('conversionAmount').value);
+            const rate = conversionRates[currentConversionType];
+            
+            if (!amount || amount <= 0) {
+                document.getElementById('conversionSummary').style.display = 'none';
+                document.getElementById('confirmConversionBtn').disabled = true;
+                return;
+            }
+            
+            // Special validation for tax waiver (minimum 500 points)
+            if (currentConversionType === 'tax' && amount * rate < 500) {
+                alert('Minimum ৳50 required for tax waiver certificate (500 points)');
+                return;
+            }
+            
+            const pointsRequired = amount * rate;
+            
+            if (pointsRequired > userPoints) {
+                alert(`Insufficient points! You need ${pointsRequired} points but have only ${userPoints} points.`);
+                return;
+            }
+            
+            // Update summary
+            document.getElementById('summaryAmount').textContent = `৳${amount}`;
+            document.getElementById('summaryPoints').textContent = `${pointsRequired} points`;
+            
+            const resultTexts = {
+                voucher: `৳${amount} discount voucher`,
+                tax: `৳${amount} tax waiver certificate`,
+                cashback: `৳${amount} mobile wallet credit`
+            };
+            
+            document.getElementById('summaryResult').textContent = resultTexts[currentConversionType];
+            document.getElementById('conversionSummary').style.display = 'block';
+            document.getElementById('confirmConversionBtn').disabled = false;
+        }
+
+        function confirmConversion() {
+            const amount = parseFloat(document.getElementById('conversionAmount').value);
+            const pointsRequired = amount * conversionRates[currentConversionType];
+            
+            // Deduct points
+            userPoints -= pointsRequired;
+            document.getElementById('currentPoints').textContent = userPoints;
+            document.querySelector('.user-info p').textContent = `${userPoints} Points`;
+            
+            // Show success message
+            const typeNames = {
+                voucher: 'discount voucher',
+                tax: 'tax waiver certificate',
+                cashback: 'cashback'
+            };
+            
+            alert(`🎉 Conversion successful!\n\nYour ${typeNames[currentConversionType]} for ৳${amount} has been generated.\n\nRemaining points: ${userPoints}`);
+            
+            closeConversionModal();
+            
+            // In a real app, you would add the voucher to the user's account
+            // and refresh the vouchers section
+        }
+
+        // Partner and Voucher Functions
+        function viewPartnerOffer(partnerId) {
+            const partnerNames = {
+                apex: 'Apex Footwear',
+                gp: 'Grameenphone',
+                uber: 'Uber',
+                foodpanda: 'Foodpanda',
+                bkash: 'bKash',
+                robi: 'Robi Axiata'
+            };
+            
+            alert(`View detailed offers from ${partnerNames[partnerId]}.\n\nThis would show:\n• All available offers\n• Terms & conditions\n• How to redeem\n• Store locations/app links`);
+        }
+
+        function redeemOffer(partnerId, pointsRequired) {
+            if (userPoints < pointsRequired) {
+                alert(`Insufficient points! You need ${pointsRequired} points but have only ${userPoints} points.`);
+                return;
+            }
+            
+            if (confirm(`Redeem this offer for ${pointsRequired} points?`)) {
+                userPoints -= pointsRequired;
+                document.getElementById('currentPoints').textContent = userPoints;
+                document.querySelector('.user-info p').textContent = `${userPoints} Points`;
+                
+                // Generate voucher code
+                const voucherCode = generateVoucherCode(partnerId);
+                
+                alert(`🎉 Offer redeemed successfully!\n\nYour voucher code: ${voucherCode}\n\nThe voucher has been added to your "My Vouchers" section.\n\nRemaining points: ${userPoints}`);
+            }
+        }
+
+        function generateVoucherCode(partnerId) {
+            const codes = {
+                apex: 'ECO20APEX',
+                gp: 'GP50ECO24',
+                uber: 'UBER100ECO',
+                foodpanda: 'FP25ECO24'
+            };
+            return codes[partnerId] || 'ECO' + Math.random().toString(36).substr(2, 8).toUpperCase();
+        }
+
+        function copyVoucherCode(code) {
+            navigator.clipboard.writeText(code).then(() => {
+                alert(`Voucher code "${code}" copied to clipboard!`);
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = code;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert(`Voucher code "${code}" copied to clipboard!`);
+            });
+        }
+
+        function useVoucher(code) {
+            if (code.includes('APEX')) {
+                alert('Opening Apex Footwear app/website...\n\nThe voucher code has been applied automatically.');
+            } else if (code.includes('GP')) {
+                alert('Opening Grameenphone app...\n\nYour account will be recharged with ৳50.');
+            } else if (code.includes('TWC')) {
+                alert('Tax waiver certificate details:\n\nCertificate Number: TWC-2024-0158\nAmount: ৳50\nValid for: Tax Year 2024\n\nYou can use this certificate while filing your tax return.');
+            } else {
+                alert('Redirecting to partner app/website...');
+            }
+        }
+
+        function downloadCertificate(certId) {
+            alert(`Downloading tax waiver certificate: ${certId}\n\nThe PDF certificate will be downloaded to your device.`);
+        }
+
+        function viewCertificate(certId) {
+            alert(`Tax Waiver Certificate Details:\n\nCertificate ID: ${certId}\nIssued Date: October 15, 2024\nAmount: ৳50\nEnvironmental Contribution: 87kg waste recycled\nValid for: Tax Year 2024\n\nThis certificate can be used during tax filing to claim environmental contribution waiver.`);
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('conversionModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeConversionModal();
+            }
+        });
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('EcoWaste Rewards Page Loaded');
+            console.log('User Points:', userPoints);
+        });
+    </script>
+</body>
+</html>

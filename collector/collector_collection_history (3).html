@@ -1,0 +1,2087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Collection History - EcoWaste Collector</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #f8fafb;
+    color: #2c3e50;
+    overflow-x: hidden;
+}
+
+.dashboard-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    width: 280px;
+    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+    color: white;
+    position: fixed;
+    height: 100vh;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    box-shadow: 2px 0 15px rgba(0,0,0,0.1);
+}
+
+.sidebar.collapsed {
+    width: 70px;
+}
+
+.sidebar-header {
+    padding: 25px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo i {
+    font-size: 28px;
+}
+
+.collapse-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 5px;
+    transition: background 0.3s ease;
+    margin-left: auto;
+}
+
+.collapse-btn:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.sidebar-menu {
+    padding: 20px 0;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    color: rgba(255,255,255,0.8);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    position: relative;
+    gap: 15px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.menu-item:hover {
+    background: rgba(255,255,255,0.1);
+    color: white;
+    transform: translateX(5px);
+}
+
+.menu-item.active {
+    background: rgba(255,255,255,0.15);
+    color: white;
+    border-right: 4px solid #fff;
+}
+
+.menu-item i {
+    font-size: 18px;
+    width: 20px;
+    text-align: center;
+}
+
+.sidebar.collapsed .menu-item span {
+    display: none;
+}
+
+.sidebar.collapsed .logo span {
+    display: none;
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    margin-left: 280px;
+    transition: margin-left 0.3s ease;
+}
+
+.main-content.expanded {
+    margin-left: 70px;
+}
+
+/* Top Navigation */
+.top-nav {
+    background: white;
+    padding: 15px 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.nav-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    cursor: pointer;
+    padding: 8px 15px;
+    border-radius: 25px;
+    transition: background 0.3s ease;
+}
+
+.user-profile:hover {
+    background: #f8f9fa;
+}
+
+.user-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.user-info h4 {
+    font-size: 14px;
+    color: #2c3e50;
+}
+
+.user-info p {
+    font-size: 12px;
+    color: #7f8c8d;
+}
+
+/* Dashboard Content */
+.dashboard-content {
+    padding: 30px;
+}
+
+/* Page Header */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #7f8c8d;
+    font-size: 14px;
+}
+
+.breadcrumb-item {
+    color: #7f8c8d;
+}
+
+.breadcrumb-item.active {
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.quick-actions {
+    display: flex;
+    gap: 15px;
+}
+
+.action-btn-header {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.action-btn-header:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(52, 152, 219, 0.3);
+}
+
+.export-btn {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+}
+
+.export-btn:hover {
+    box-shadow: 0 10px 25px rgba(46, 204, 113, 0.3);
+}
+
+/* Overview Section */
+.overview-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    position: relative;
+    overflow: hidden;
+}
+
+.overview-section::before {
+    content: '';
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 150px;
+    height: 150px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+}
+
+.overview-content {
+    position: relative;
+    z-index: 2;
+}
+
+.overview-title {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.overview-subtitle {
+    opacity: 0.9;
+    margin-bottom: 25px;
+}
+
+.overview-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 30px;
+}
+
+.overview-stat {
+    text-align: center;
+}
+
+.overview-stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.overview-stat-label {
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+/* Filter Section */
+.filter-section {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    margin-bottom: 30px;
+}
+
+.filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.filter-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.filter-controls {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+    gap: 15px;
+    align-items: end;
+}
+
+.search-container {
+    position: relative;
+}
+
+.search-container i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #7f8c8d;
+}
+
+.search-input {
+    padding: 12px 15px 12px 45px;
+    border: 1px solid #e0e6ed;
+    border-radius: 8px;
+    width: 100%;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.filter-select {
+    padding: 12px 15px;
+    border: 1px solid #e0e6ed;
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.clear-filters-btn {
+    background: #95a5a6;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.clear-filters-btn:hover {
+    background: #7f8c8d;
+}
+
+/* Analytics Grid */
+.analytics-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.chart-container {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.chart-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.chart-period {
+    color: #7f8c8d;
+    font-size: 14px;
+}
+
+.chart-canvas {
+    width: 100% !important;
+    height: 300px !important;
+}
+
+.performance-metrics {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+}
+
+.metric-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #f8f9fa;
+}
+
+.metric-item:last-child {
+    border-bottom: none;
+}
+
+.metric-label {
+    color: #7f8c8d;
+    font-size: 14px;
+}
+
+.metric-value {
+    font-weight: 700;
+    color: #2c3e50;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.metric-trend {
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 12px;
+}
+
+.trend-up {
+    background: #d4edda;
+    color: #155724;
+}
+
+.trend-down {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* History Table */
+.history-table-container {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    overflow: hidden;
+}
+
+.table-header {
+    background: #fafbfc;
+    padding: 20px 25px;
+    border-bottom: 1px solid #f1f3f4;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.section-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #2c3e50;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.view-toggle {
+    display: flex;
+    gap: 5px;
+    background: #f8f9fa;
+    padding: 3px;
+    border-radius: 8px;
+}
+
+.view-btn {
+    background: none;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #7f8c8d;
+    transition: all 0.3s ease;
+}
+
+.view-btn.active {
+    background: white;
+    color: #2c3e50;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.data-table-wrapper {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th {
+    text-align: left;
+    padding: 15px 20px;
+    background: #fafbfc;
+    border-bottom: 1px solid #f1f3f4;
+    font-weight: 600;
+    color: #555;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.data-table td {
+    padding: 15px 20px;
+    border-bottom: 1px solid #f8f9fa;
+    color: #555;
+    vertical-align: middle;
+}
+
+.data-table tr:hover {
+    background: #f8f9fa;
+}
+
+/* Collection Cards */
+.collection-card {
+    border: 1px solid #e0e6ed;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.collection-card:hover {
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+}
+
+.collection-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.collection-id {
+    font-weight: 700;
+    color: #2c3e50;
+    font-size: 16px;
+}
+
+.collection-date {
+    color: #7f8c8d;
+    font-size: 12px;
+}
+
+.collection-earnings {
+    font-weight: 700;
+    color: #27ae60;
+    font-size: 18px;
+}
+
+.collection-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.detail-item {
+    text-align: center;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.detail-value {
+    font-weight: 700;
+    color: #2c3e50;
+    font-size: 18px;
+    margin-bottom: 5px;
+}
+
+.detail-label {
+    color: #7f8c8d;
+    font-size: 12px;
+}
+
+.customer-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.customer-avatar {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 12px;
+}
+
+.customer-name {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.waste-types {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.waste-type {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.waste-plastic { background: #ffebee; color: #c62828; }
+.waste-paper { background: #f3e5f5; color: #7b1fa2; }
+.waste-ewaste { background: #e8f5e8; color: #2e7d32; }
+.waste-metal { background: #fff3e0; color: #ef6c00; }
+.waste-glass { background: #e3f2fd; color: #1565c0; }
+.waste-organic { background: #f1f8e9; color: #558b2f; }
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
+    border-top: 1px solid #f1f3f4;
+}
+
+.pagination-btn {
+    background: white;
+    border: 1px solid #e0e6ed;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #7f8c8d;
+    transition: all 0.3s ease;
+}
+
+.pagination-btn:hover {
+    background: #f8f9fa;
+    border-color: #3498db;
+    color: #3498db;
+}
+
+.pagination-btn.active {
+    background: #3498db;
+    border-color: #3498db;
+    color: white;
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* No Results */
+.no-history {
+    text-align: center;
+    padding: 60px 20px;
+    color: #7f8c8d;
+}
+
+.no-history i {
+    font-size: 64px;
+    margin-bottom: 20px;
+    color: #bdc3c7;
+}
+
+.no-history h3 {
+    font-size: 20px;
+    margin-bottom: 10px;
+    color: #2c3e50;
+}
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.modal-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #7f8c8d;
+    padding: 5px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+    background: #f8f9fa;
+    color: #e74c3c;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+    margin-top: 25px;
+    padding-top: 15px;
+    border-top: 1px solid #f1f3f4;
+}
+
+.btn-cancel {
+    background: #95a5a6;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-cancel:hover {
+    background: #7f8c8d;
+}
+
+/* Mobile Responsive */
+.mobile-menu-btn {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        width: 70px;
+        transform: translateX(-100%);
+    }
+    
+    .sidebar.mobile-open {
+        transform: translateX(0);
+        width: 280px;
+    }
+    
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    .main-content.expanded {
+        margin-left: 0;
+    }
+
+    .dashboard-content {
+        padding: 15px;
+    }
+
+    .overview-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .analytics-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .filter-controls {
+        grid-template-columns: 1fr;
+    }
+
+    .collection-details {
+        grid-template-columns: 1fr;
+    }
+
+    .data-table {
+        min-width: 800px;
+    }
+
+    .mobile-menu-btn {
+        display: block;
+        background: none;
+        border: none;
+        color: #2c3e50;
+        font-size: 20px;
+        cursor: pointer;
+        padding: 5px;
+        border-radius: 5px;
+        margin-right: 15px;
+    }
+
+    .mobile-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 999;
+    }
+
+    .mobile-overlay.active {
+        display: block;
+    }
+}
+</style>
+</head>
+<body>
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    <body>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-leaf"></i>
+                <span>EcoWaste</span>
+            </div>
+            <button class="collapse-btn" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+        <nav class="sidebar-menu">
+            <a href="collector_dashboard (3).html" class="menu-item">
+                <i class="fas fa-chart-pie"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="collector_assigned_pickups.html" class="menu-item">
+                <i class="fas fa-truck"></i>
+                <span>Assigned Pickups</span>
+            </a>
+            <a href="collector_collection_history (3).html" class="menu-item active">
+                <i class="fas fa-history"></i>
+                <span>Collection History</span>
+            </a>
+            <a href="collector_earnings (2).html" class="menu-item">
+                <i class="fas fa-money-bill-wave"></i>
+                <span>Earnings</span>
+            </a>
+            <a href="collector_analytics.html" class="menu-item">
+                <i class="fas fa-chart-bar"></i>
+                <span>Analytics</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <!-- Top Navigation -->
+        <div class="top-nav">
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h1 class="nav-title">Collection History</h1>
+            <div class="user-profile">
+                <div class="user-avatar">JC</div>
+                <div class="user-info">
+                    <h4>John Collector</h4>
+                    <p>Waste Collector</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="breadcrumbs">
+                    <span class="breadcrumb-item">Collector</span>
+                    <i class="fas fa-chevron-right"></i>
+                    <span class="breadcrumb-item active">Collection History</span>
+                </div>
+                <div class="quick-actions">
+                    <button class="action-btn-header export-btn" onclick="exportHistory()">
+                        <i class="fas fa-download"></i> Export Data
+                    </button>
+                    <button class="action-btn-header" onclick="generateReport()">
+                        <i class="fas fa-file-alt"></i> Generate Report
+                    </button>
+                </div>
+            </div>
+
+            <!-- Overview Section -->
+            <div class="overview-section">
+                <div class="overview-content">
+                    <h2 class="overview-title">Your Collection Journey 🚛</h2>
+                    <p class="overview-subtitle">Track your environmental impact and earnings over time</p>
+                    <div class="overview-stats">
+                        <div class="overview-stat">
+                            <div class="overview-stat-value" id="totalCollections">247</div>
+                            <div class="overview-stat-label">Total Collections</div>
+                        </div>
+                        <div class="overview-stat">
+                            <div class="overview-stat-value" id="totalWasteCollected">3.2</div>
+                            <div class="overview-stat-label">Tons Collected</div>
+                        </div>
+                        <div class="overview-stat">
+                            <div class="overview-stat-value" id="totalEarnings">$8,450</div>
+                            <div class="overview-stat-label">Total Earnings</div>
+                        </div>
+                        <div class="overview-stat">
+                            <div class="overview-stat-value" id="avgRating">4.9</div>
+                            <div class="overview-stat-label">Avg Rating ⭐</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Section -->
+            <div class="filter-section">
+                <div class="filter-header">
+                    <h3 class="filter-title">Filter Your Collection History</h3>
+                </div>
+                <div class="filter-controls">
+                    <div class="search-container">
+                        <i class="fas fa-search"></i>
+                        <input type="text" class="search-input" id="searchInput" placeholder="Search by customer name, address, or request ID..." onkeyup="filterHistory()">
+                    </div>
+                    <select class="filter-select" id="periodFilter" onchange="filterHistory()">
+                        <option value="">All Time</option>
+                        <option value="today">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                        <option value="quarter">This Quarter</option>
+                    </select>
+                    <select class="filter-select" id="wasteTypeFilter" onchange="filterHistory()">
+                        <option value="">All Waste Types</option>
+                        <option value="plastic">Plastic</option>
+                        <option value="paper">Paper</option>
+                        <option value="ewaste">E-Waste</option>
+                        <option value="metal">Metal</option>
+                        <option value="glass">Glass</option>
+                        <option value="organic">Organic</option>
+                    </select>
+                    <select class="filter-select" id="sortFilter" onchange="filterHistory()">
+                        <option value="date-desc">Newest First</option>
+                        <option value="date-asc">Oldest First</option>
+                        <option value="earnings-desc">Highest Earnings</option>
+                        <option value="weight-desc">Highest Weight</option>
+                    </select>
+                    <button class="clear-filters-btn" onclick="clearFilters()">
+                        <i class="fas fa-times"></i> Clear
+                    </button>
+                </div>
+            </div>
+
+            <!-- Analytics Grid -->
+            <div class="analytics-grid">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Collection Trends</h3>
+                        <span class="chart-period">Last 6 Months</span>
+                    </div>
+                    <canvas id="collectionChart" class="chart-canvas"></canvas>
+                </div>
+                
+                <div class="performance-metrics">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Performance Metrics</h3>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Collections This Month</span>
+                        <span class="metric-value">
+                            28
+                            <span class="metric-trend trend-up">+12%</span>
+                        </span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Average per Day</span>
+                        <span class="metric-value">
+                            3.2
+                            <span class="metric-trend trend-up">+8%</span>
+                        </span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Earnings per Collection</span>
+                        <span class="metric-value">
+                            $34.25
+                            <span class="metric-trend trend-up">+5%</span>
+                        </span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Weight per Collection</span>
+                        <span class="metric-value">
+                            6.8 kg
+                            <span class="metric-trend trend-up">+15%</span>
+                        </span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Customer Satisfaction</span>
+                        <span class="metric-value">
+                            98%
+                            <span class="metric-trend trend-up">+2%</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History Table -->
+            <div class="history-table-container">
+                <div class="table-header">
+                    <h3 class="section-title">
+                        <i class="fas fa-history"></i>
+                        Collection History
+                    </h3>
+                    <div class="view-toggle">
+                        <button class="view-btn active" onclick="switchView('table')" data-view="table">
+                            <i class="fas fa-table"></i>
+                        </button>
+                        <button class="view-btn" onclick="switchView('cards')" data-view="cards">
+                            <i class="fas fa-th-large"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Table View -->
+                <div class="data-table-wrapper" id="tableView">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Request ID</th>
+                                <th>Customer</th>
+                                <th>Waste Types</th>
+                                <th>Weight</th>
+                                <th>Earnings</th>
+                                <th>Rating</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody">
+                            <!-- History rows will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Cards View -->
+                <div id="cardsView" style="display: none; padding: 25px;">
+                    <div id="historyCardsContainer">
+                        <!-- History cards will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- No Results -->
+                <div class="no-history" id="noHistory" style="display: none;">
+                    <i class="fas fa-history"></i>
+                    <h3>No collection history found</h3>
+                    <p>No collections match your current filters or you haven't completed any pickups yet.</p>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination" id="pagination">
+                    <button class="pagination-btn" onclick="changePage('prev')" id="prevBtn">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <span id="pageNumbers"></span>
+                    <button class="pagination-btn" onclick="changePage('next')" id="nextBtn">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Collection Details Modal -->
+<div class="modal-overlay" id="collectionDetailsModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Collection Details</h3>
+            <button class="modal-close" onclick="closeCollectionDetails()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="collectionDetailsBody">
+            <!-- Collection details will be loaded here -->
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeCollectionDetails()">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Mobile Overlay -->
+<div class="mobile-overlay" id="mobileOverlay" onclick="toggleMobileMenu()"></div>
+
+<script>
+// Sample collection history data
+let collectionHistory = [
+    {
+        id: 'REQ001',
+        requestId: 'REQ001',
+        customerName: 'John Smith',
+        contactNumber: '+1-234-567-8901',
+        wasteTypes: [
+            { type: 'plastic', weight: 2.5 },
+            { type: 'paper', weight: 1.8 }
+        ],
+        completedDate: '2024-08-04T14:30:00Z',
+        address: '123 Green Street, Eco City, EC 12345',
+        earnings: 21.50,
+        rating: 5,
+        notes: 'Customer was very satisfied. Prompt service.',
+        timeSpent: '45 minutes'
+    },
+    {
+        id: 'REQ002',
+        requestId: 'REQ002',
+        customerName: 'Sarah Johnson',
+        contactNumber: '+1-234-567-8902',
+        wasteTypes: [
+            { type: 'ewaste', weight: 5.2 },
+            { type: 'metal', weight: 3.1 }
+        ],
+        completedDate: '2024-08-04T10:15:00Z',
+        address: '456 Blue Avenue, Eco City, EC 12346',
+        earnings: 41.50,
+        rating: 5,
+        notes: 'Heavy electronics. Used trolley for transport.',
+        timeSpent: '1.2 hours'
+    },
+    {
+        id: 'REQ003',
+        requestId: 'REQ003',
+        customerName: 'Mike Davis',
+        contactNumber: '+1-234-567-8903',
+        wasteTypes: [
+            { type: 'glass', weight: 4.0 },
+            { type: 'organic', weight: 2.3 }
+        ],
+        completedDate: '2024-08-03T16:45:00Z',
+        address: '789 Yellow Road, Eco City, EC 12347',
+        earnings: 31.50,
+        rating: 4,
+        notes: 'Glass bottles well-sorted. Garden waste included.',
+        timeSpent: '35 minutes'
+    },
+    {
+        id: 'REQ004',
+        requestId: 'REQ004',
+        customerName: 'Emma Wilson',
+        contactNumber: '+1-234-567-8904',
+        wasteTypes: [
+            { type: 'plastic', weight: 1.5 },
+            { type: 'paper', weight: 3.2 },
+            { type: 'organic', weight: 1.8 }
+        ],
+        completedDate: '2024-08-03T09:20:00Z',
+        address: '321 Purple Lane, Eco City, EC 12348',
+        earnings: 32.50,
+        rating: 5,
+        notes: 'Mixed household waste. Customer very friendly.',
+        timeSpent: '50 minutes'
+    },
+    {
+        id: 'REQ005',
+        requestId: 'REQ005',
+        customerName: 'Robert Brown',
+        contactNumber: '+1-234-567-8905',
+        wasteTypes: [
+            { type: 'plastic', weight: 3.0 },
+            { type: 'metal', weight: 2.5 }
+        ],
+        completedDate: '2024-08-02T13:10:00Z',
+        address: '555 Orange Street, Eco City, EC 12349',
+        earnings: 27.50,
+        rating: 4,
+        notes: 'Large plastic containers. Heavy lifting required.',
+        timeSpent: '40 minutes'
+    },
+    {
+        id: 'REQ006',
+        requestId: 'REQ006',
+        customerName: 'Lisa Garcia',
+        contactNumber: '+1-234-567-8906',
+        wasteTypes: [
+            { type: 'paper', weight: 4.5 },
+            { type: 'glass', weight: 1.2 }
+        ],
+        completedDate: '2024-08-02T11:30:00Z',
+        address: '777 Pink Avenue, Eco City, EC 12350',
+        earnings: 28.50,
+        rating: 5,
+        notes: 'Office paper waste. Well-organized customer.',
+        timeSpent: '30 minutes'
+    },
+    {
+        id: 'REQ007',
+        requestId: 'REQ007',
+        customerName: 'David Lee',
+        contactNumber: '+1-234-567-8907',
+        wasteTypes: [
+            { type: 'ewaste', weight: 8.0 }
+        ],
+        completedDate: '2024-08-01T15:00:00Z',
+        address: '999 Silver Road, Eco City, EC 12351',
+        earnings: 80.00,
+        rating: 5,
+        notes: 'Old TV and electronics. High-value pickup.',
+        timeSpent: '1.5 hours'
+    },
+    {
+        id: 'REQ008',
+        requestId: 'REQ008',
+        customerName: 'Amanda Taylor',
+        contactNumber: '+1-234-567-8908',
+        wasteTypes: [
+            { type: 'organic', weight: 5.5 },
+            { type: 'plastic', weight: 1.0 }
+        ],
+        completedDate: '2024-08-01T08:45:00Z',
+        address: '111 Gold Lane, Eco City, EC 12352',
+        earnings: 32.50,
+        rating: 5,
+        notes: 'Garden waste and containers. Early morning pickup.',
+        timeSpent: '55 minutes'
+    },
+    {
+        id: 'REQ009',
+        requestId: 'REQ009',
+        customerName: 'Chris Wilson',
+        contactNumber: '+1-234-567-8909',
+        wasteTypes: [
+            { type: 'plastic', weight: 2.8 },
+            { type: 'metal', weight: 1.5 }
+        ],
+        completedDate: '2024-07-31T14:20:00Z',
+        address: '222 Diamond Street, Eco City, EC 12353',
+        earnings: 21.50,
+        rating: 4,
+        notes: 'Regular customer. Always prepared.',
+        timeSpent: '35 minutes'
+    },
+    {
+        id: 'REQ010',
+        requestId: 'REQ010',
+        customerName: 'Maria Rodriguez',
+        contactNumber: '+1-234-567-8910',
+        wasteTypes: [
+            { type: 'paper', weight: 6.2 },
+            { type: 'glass', weight: 2.1 }
+        ],
+        completedDate: '2024-07-31T10:15:00Z',
+        address: '333 Emerald Avenue, Eco City, EC 12354',
+        earnings: 41.50,
+        rating: 5,
+        notes: 'Business waste. Large quantity of paper.',
+        timeSpent: '1.1 hours'
+    }
+];
+
+let filteredHistory = [...collectionHistory];
+let currentView = 'table';
+let currentPage = 1;
+let itemsPerPage = 8;
+let totalPages = 1;
+
+// Chart instance
+let collectionChart;
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    updateOverviewStats();
+    initializeChart();
+    loadHistory();
+    calculatePagination();
+    updatePagination();
+});
+
+// Update overview statistics
+function updateOverviewStats() {
+    const totalCollections = collectionHistory.length;
+    const totalWaste = collectionHistory.reduce((sum, collection) => 
+        sum + getTotalWeight(collection.wasteTypes), 0
+    ) / 1000; // Convert to tons
+    const totalEarnings = collectionHistory.reduce((sum, collection) => 
+        sum + collection.earnings, 0
+    );
+    const avgRating = collectionHistory.reduce((sum, collection) => 
+        sum + collection.rating, 0
+    ) / collectionHistory.length;
+
+    document.getElementById('totalCollections').textContent = totalCollections;
+    document.getElementById('totalWasteCollected').textContent = totalWaste.toFixed(1);
+    document.getElementById('totalEarnings').textContent = `${totalEarnings.toLocaleString()}`;
+    document.getElementById('avgRating').textContent = avgRating.toFixed(1);
+}
+
+// Initialize collection trends chart
+function initializeChart() {
+    const ctx = document.getElementById('collectionChart').getContext('2d');
+    
+    // Generate last 6 months data
+    const labels = [];
+    const collectionsData = [];
+    const earningsData = [];
+    
+    for (let i = 5; i >= 0; i--) {
+        const date = new Date();
+        date.setMonth(date.getMonth() - i);
+        labels.push(date.toLocaleDateString('en-US', { month: 'short' }));
+        
+        // Simulate data for demo
+        collectionsData.push(Math.floor(Math.random() * 20) + 15);
+        earningsData.push(Math.floor(Math.random() * 800) + 600);
+    }
+    
+    collectionChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Collections',
+                data: collectionsData,
+                borderColor: '#3498db',
+                backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                yAxisID: 'y'
+            }, {
+                label: 'Earnings ($)',
+                data: earningsData,
+                borderColor: '#27ae60',
+                backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                yAxisID: 'y1'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false
+                    }
+                },
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: 'Collections'
+                    },
+                    grid: {
+                        color: '#f1f3f4'
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'Earnings ($)'
+                    },
+                    grid: {
+                        drawOnChartArea: false,
+                    },
+                }
+            }
+        }
+    });
+}
+
+// Load history based on current view
+function loadHistory() {
+    if (currentView === 'table') {
+        loadTableView();
+    } else {
+        loadCardsView();
+    }
+}
+
+// Load table view
+function loadTableView() {
+    const tbody = document.getElementById('historyTableBody');
+    const noHistoryEl = document.getElementById('noHistory');
+    
+    if (filteredHistory.length === 0) {
+        tbody.innerHTML = '';
+        noHistoryEl.style.display = 'block';
+        return;
+    }
+    
+    noHistoryEl.style.display = 'none';
+    
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const pageData = filteredHistory.slice(startIndex, endIndex);
+    
+    tbody.innerHTML = pageData.map(collection => `
+        <tr onclick="viewCollectionDetails('${collection.id}')" style="cursor: pointer;">
+            <td>
+                <strong>${formatDate(collection.completedDate)}</strong>
+                <br>
+                <small style="color: #7f8c8d;">${formatTime(collection.completedDate)}</small>
+            </td>
+            <td>
+                <strong>${collection.requestId}</strong>
+            </td>
+            <td>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 12px;">
+                        ${collection.customerName.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                        <strong>${collection.customerName}</strong>
+                        <br>
+                        <small style="color: #7f8c8d;">${collection.contactNumber}</small>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <div class="waste-types">
+                    ${collection.wasteTypes.map(waste => 
+                        `<span class="waste-type waste-${waste.type}">${waste.type}</span>`
+                    ).join('')}
+                </div>
+            </td>
+            <td>
+                <strong>${getTotalWeight(collection.wasteTypes)} kg</strong>
+            </td>
+            <td>
+                <strong style="color: #27ae60;">${collection.earnings.toFixed(2)}</strong>
+            </td>
+            <td>
+                <div style="display: flex; align-items: center; gap: 5px;">
+                    <span>${collection.rating}</span>
+                    ${generateStars(collection.rating)}
+                </div>
+            </td>
+            <td>
+                <button class="view-btn" onclick="event.stopPropagation(); viewCollectionDetails('${collection.id}')" title="View Details" style="background: none; border: none; color: #3498db; cursor: pointer; padding: 5px;">
+                    <i class="fas fa-eye"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// Load cards view
+function loadCardsView() {
+    const container = document.getElementById('historyCardsContainer');
+    const noHistoryEl = document.getElementById('noHistory');
+    
+    if (filteredHistory.length === 0) {
+        container.innerHTML = '';
+        noHistoryEl.style.display = 'block';
+        return;
+    }
+    
+    noHistoryEl.style.display = 'none';
+    
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const pageData = filteredHistory.slice(startIndex, endIndex);
+    
+    container.innerHTML = pageData.map(collection => `
+        <div class="collection-card" onclick="viewCollectionDetails('${collection.id}')">
+            <div class="collection-header">
+                <div>
+                    <div class="collection-id">${collection.requestId}</div>
+                    <div class="collection-date">${formatDateTime(collection.completedDate)}</div>
+                </div>
+                <div class="collection-earnings">${collection.earnings.toFixed(2)}</div>
+            </div>
+            
+            <div class="customer-info">
+                <div class="customer-avatar">
+                    ${collection.customerName.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                    <div class="customer-name">${collection.customerName}</div>
+                    <div style="font-size: 12px; color: #7f8c8d;">${collection.contactNumber}</div>
+                </div>
+            </div>
+            
+            <div class="collection-details">
+                <div class="detail-item">
+                    <div class="detail-value">${getTotalWeight(collection.wasteTypes)}</div>
+                    <div class="detail-label">Weight (kg)</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-value">${collection.wasteTypes.length}</div>
+                    <div class="detail-label">Waste Types</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-value">${collection.rating} ⭐</div>
+                    <div class="detail-label">Rating</div>
+                </div>
+            </div>
+            
+            <div class="waste-types">
+                ${collection.wasteTypes.map(waste => 
+                    `<span class="waste-type waste-${waste.type}">${waste.type} (${waste.weight}kg)</span>`
+                ).join('')}
+            </div>
+            
+            <div style="margin-top: 10px; color: #7f8c8d; font-size: 12px;">
+                <i class="fas fa-map-marker-alt"></i> ${collection.address}
+            </div>
+        </div>
+    `).join('');
+}
+
+// Switch between table and cards view
+function switchView(view) {
+    currentView = view;
+    
+    // Update active button
+    document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector(`[data-view="${view}"]`).classList.add('active');
+    
+    // Show/hide containers
+    const tableView = document.getElementById('tableView');
+    const cardsView = document.getElementById('cardsView');
+    
+    if (view === 'table') {
+        tableView.style.display = 'block';
+        cardsView.style.display = 'none';
+        loadTableView();
+    } else {
+        tableView.style.display = 'none';
+        cardsView.style.display = 'block';
+        loadCardsView();
+    }
+}
+
+// Filter history
+function filterHistory() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const periodFilter = document.getElementById('periodFilter').value;
+    const wasteTypeFilter = document.getElementById('wasteTypeFilter').value;
+    const sortFilter = document.getElementById('sortFilter').value;
+    
+    // Apply filters
+    filteredHistory = collectionHistory.filter(collection => {
+        const matchesSearch = !searchTerm || 
+            collection.customerName.toLowerCase().includes(searchTerm) ||
+            collection.address.toLowerCase().includes(searchTerm) ||
+            collection.requestId.toLowerCase().includes(searchTerm);
+            
+        const matchesPeriod = !periodFilter || checkPeriodFilter(collection.completedDate, periodFilter);
+        
+        const matchesWasteType = !wasteTypeFilter || 
+            collection.wasteTypes.some(waste => waste.type === wasteTypeFilter);
+        
+        return matchesSearch && matchesPeriod && matchesWasteType;
+    });
+    
+    // Apply sorting
+    if (sortFilter) {
+        const [field, direction] = sortFilter.split('-');
+        filteredHistory.sort((a, b) => {
+            let aValue, bValue;
+            
+            switch(field) {
+                case 'date':
+                    aValue = new Date(a.completedDate);
+                    bValue = new Date(b.completedDate);
+                    break;
+                case 'earnings':
+                    aValue = a.earnings;
+                    bValue = b.earnings;
+                    break;
+                case 'weight':
+                    aValue = getTotalWeight(a.wasteTypes);
+                    bValue = getTotalWeight(b.wasteTypes);
+                    break;
+            }
+            
+            if (direction === 'desc') {
+                return bValue > aValue ? 1 : -1;
+            } else {
+                return aValue > bValue ? 1 : -1;
+            }
+        });
+    }
+    
+    currentPage = 1;
+    calculatePagination();
+    loadHistory();
+    updatePagination();
+}
+
+// Check period filter
+function checkPeriodFilter(dateString, period) {
+    const date = new Date(dateString);
+    const now = new Date();
+    
+    switch(period) {
+        case 'today':
+            return date.toDateString() === now.toDateString();
+        case 'week':
+            const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            return date >= weekAgo;
+        case 'month':
+            return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+        case 'quarter':
+            const currentQuarter = Math.floor(now.getMonth() / 3);
+            const dateQuarter = Math.floor(date.getMonth() / 3);
+            return dateQuarter === currentQuarter && date.getFullYear() === now.getFullYear();
+        default:
+            return true;
+    }
+}
+
+// Clear filters
+function clearFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('periodFilter').value = '';
+    document.getElementById('wasteTypeFilter').value = '';
+    document.getElementById('sortFilter').value = 'date-desc';
+    
+    filterHistory();
+}
+
+// Pagination functions
+function calculatePagination() {
+    totalPages = Math.ceil(filteredHistory.length / itemsPerPage);
+}
+
+function updatePagination() {
+    const pageNumbers = document.getElementById('pageNumbers');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    
+    // Update buttons
+    prevBtn.disabled = currentPage === 1;
+    nextBtn.disabled = currentPage === totalPages || totalPages === 0;
+    
+    // Generate page numbers
+    let paginationHTML = '';
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    
+    if (endPage - startPage < maxVisiblePages - 1) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+        paginationHTML += `
+            <button class="pagination-btn ${i === currentPage ? 'active' : ''}" 
+                    onclick="goToPage(${i})">${i}</button>
+        `;
+    }
+    
+    pageNumbers.innerHTML = paginationHTML;
+}
+
+function changePage(direction) {
+    if (direction === 'prev' && currentPage > 1) {
+        currentPage--;
+    } else if (direction === 'next' && currentPage < totalPages) {
+        currentPage++;
+    }
+    
+    loadHistory();
+    updatePagination();
+}
+
+function goToPage(page) {
+    currentPage = page;
+    loadHistory();
+    updatePagination();
+}
+
+// View collection details
+function viewCollectionDetails(collectionId) {
+    const collection = collectionHistory.find(c => c.id === collectionId);
+    if (!collection) return;
+
+    const modal = document.getElementById('collectionDetailsModal');
+    const modalBody = document.getElementById('collectionDetailsBody');
+    
+    modalBody.innerHTML = `
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            <div>
+                <h4 style="margin-bottom: 15px; color: #2c3e50;">Collection Information</h4>
+                <p><strong>Request ID:</strong> ${collection.requestId}</p>
+                <p><strong>Completed:</strong> ${formatDateTime(collection.completedDate)}</p>
+                <p><strong>Time Spent:</strong> ${collection.timeSpent}</p>
+                <p><strong>Earnings:</strong> <span style="color: #27ae60; font-weight: 700;">${collection.earnings.toFixed(2)}</span></p>
+            </div>
+            <div>
+                <h4 style="margin-bottom: 15px; color: #2c3e50;">Customer Information</h4>
+                <p><strong>Name:</strong> ${collection.customerName}</p>
+                <p><strong>Contact:</strong> ${collection.contactNumber}</p>
+                <p><strong>Rating:</strong> ${collection.rating} ${generateStars(collection.rating)}</p>
+            </div>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <h4 style="margin-bottom: 15px; color: #2c3e50;">Waste Collected</h4>
+            <div class="waste-types">
+                ${collection.wasteTypes.map(waste => 
+                    `<span class="waste-type waste-${waste.type}">${waste.type}: ${waste.weight}kg</span>`
+                ).join('')}
+            </div>
+            <p style="margin-top: 10px;"><strong>Total Weight:</strong> ${getTotalWeight(collection.wasteTypes)} kg</p>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <h4 style="margin-bottom: 15px; color: #2c3e50;">Address</h4>
+            <p style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 0;">${collection.address}</p>
+        </div>
+        
+        ${collection.notes ? `
+            <div>
+                <h4 style="margin-bottom: 15px; color: #2c3e50;">Notes</h4>
+                <p style="background: #d4edda; padding: 15px; border-radius: 8px; margin: 0; border-left: 4px solid #27ae60;">${collection.notes}</p>
+            </div>
+        ` : ''}
+    `;
+    
+    modal.classList.add('active');
+}
+
+function closeCollectionDetails() {
+    const modal = document.getElementById('collectionDetailsModal');
+    modal.classList.remove('active');
+}
+
+// Export history
+function exportHistory() {
+    try {
+        const exportData = filteredHistory.map(collection => ({
+            'Request ID': collection.requestId,
+            'Customer Name': collection.customerName,
+            'Contact Number': collection.contactNumber,
+            'Completed Date': formatDate(collection.completedDate),
+            'Completed Time': formatTime(collection.completedDate),
+            'Waste Types': collection.wasteTypes.map(w => `${w.type}(${w.weight}kg)`).join(', '),
+            'Total Weight (kg)': getTotalWeight(collection.wasteTypes),
+            'Earnings ($)': collection.earnings.toFixed(2),
+            'Rating': collection.rating,
+            'Time Spent': collection.timeSpent,
+            'Address': collection.address,
+            'Notes': collection.notes || ''
+        }));
+
+        // Convert to CSV
+        const headers = Object.keys(exportData[0]);
+        const csvContent = [
+            headers.join(','),
+            ...exportData.map(row => headers.map(header => `"${row[header] || ''}"`).join(','))
+        ].join('\n');
+
+        // Download file
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `collection_history_${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        showNotification('Collection history exported successfully!', 'success');
+    } catch (error) {
+        showNotification('Export failed. Please try again.', 'error');
+    }
+}
+
+// Generate report
+function generateReport() {
+    const reportData = {
+        totalCollections: filteredHistory.length,
+        totalEarnings: filteredHistory.reduce((sum, c) => sum + c.earnings, 0),
+        totalWeight: filteredHistory.reduce((sum, c) => sum + getTotalWeight(c.wasteTypes), 0),
+        avgRating: filteredHistory.reduce((sum, c) => sum + c.rating, 0) / filteredHistory.length,
+        avgEarningsPerCollection: filteredHistory.reduce((sum, c) => sum + c.earnings, 0) / filteredHistory.length,
+        mostCommonWasteType: getMostCommonWasteType(),
+        topCustomer: getTopCustomer()
+    };
+
+    const reportHTML = `
+        <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px;">
+            <h1 style="color: #2c3e50; text-align: center; margin-bottom: 30px;">Collection Performance Report</h1>
+            <p style="text-align: center; color: #7f8c8d; margin-bottom: 40px;">
+                Generated on ${new Date().toLocaleDateString()} for John Collector
+            </p>
+            
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 40px;">
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center;">
+                    <h3 style="color: #2c3e50; margin-bottom: 10px;">${reportData.totalCollections}</h3>
+                    <p style="color: #7f8c8d;">Total Collections</p>
+                </div>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center;">
+                    <h3 style="color: #27ae60; margin-bottom: 10px;">${reportData.totalEarnings.toFixed(2)}</h3>
+                    <p style="color: #7f8c8d;">Total Earnings</p>
+                </div>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center;">
+                    <h3 style="color: #2c3e50; margin-bottom: 10px;">${reportData.totalWeight.toFixed(1)} kg</h3>
+                    <p style="color: #7f8c8d;">Total Weight Collected</p>
+                </div>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center;">
+                    <h3 style="color: #2c3e50; margin-bottom: 10px;">${reportData.avgRating.toFixed(1)} ⭐</h3>
+                    <p style="color: #7f8c8d;">Average Rating</p>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 30px;">
+                <h3 style="color: #2c3e50; margin-bottom: 15px;">Key Insights</h3>
+                <ul style="color: #555; line-height: 1.6;">
+                    <li>Average earnings per collection: <strong>${reportData.avgEarningsPerCollection.toFixed(2)}</strong></li>
+                    <li>Most common waste type: <strong>${reportData.mostCommonWasteType}</strong></li>
+                    <li>Top customer: <strong>${reportData.topCustomer}</strong></li>
+                    <li>Customer satisfaction rate: <strong>${(reportData.avgRating / 5 * 100).toFixed(1)}%</strong></li>
+                </ul>
+            </div>
+        </div>
+    `;
+
+    const newWindow = window.open('', '_blank');
+    newWindow.document.write(reportHTML);
+    newWindow.document.close();
+    newWindow.print();
+
+    showNotification('Performance report generated!', 'success');
+}
+
+// Utility functions
+function getTotalWeight(wasteTypes) {
+    return wasteTypes.reduce((total, waste) => total + waste.weight, 0).toFixed(1);
+}
+
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+        year: 'numeric',
+        month: 'short', 
+        day: 'numeric'
+    });
+}
+
+function formatTime(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('en-US', { 
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+function formatDateTime(dateString) {
+    const date = new Date(dateString);
+    return `${formatDate(dateString)} at ${formatTime(dateString)}`;
+}
+
+function generateStars(rating) {
+    let stars = '';
+    for (let i = 1; i <= 5; i++) {
+        if (i <= rating) {
+            stars += '<span style="color: #f39c12;">★</span>';
+        } else {
+            stars += '<span style="color: #bdc3c7;">★</span>';
+        }
+    }
+    return stars;
+}
+
+function getMostCommonWasteType() {
+    const wasteCount = {};
+    collectionHistory.forEach(collection => {
+        collection.wasteTypes.forEach(waste => {
+            wasteCount[waste.type] = (wasteCount[waste.type] || 0) + 1;
+        });
+    });
+    
+    return Object.keys(wasteCount).reduce((a, b) => wasteCount[a] > wasteCount[b] ? a : b);
+}
+
+function getTopCustomer() {
+    const customerCount = {};
+    collectionHistory.forEach(collection => {
+        customerCount[collection.customerName] = (customerCount[collection.customerName] || 0) + 1;
+    });
+    
+    return Object.keys(customerCount).reduce((a, b) => customerCount[a] > customerCount[b] ? a : b);
+}
+
+// Navigation functions
+function showSection(section) {
+    showNotification(`${section.replace('-', ' ')} section would load here.`, 'info');
+}
+
+function logout() {
+    if (confirm('Are you sure you want to logout?')) {
+        showNotification('Logging out...', 'info');
+        setTimeout(() => {
+            window.location.href = 'login.html';
+        }, 1500);
+    }
+}
+
+// Sidebar toggle
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+    
+    if (sidebar && mainContent) {
+        sidebar.classList.toggle('collapsed');
+        mainContent.classList.toggle('expanded');
+    }
+}
+
+// Mobile menu toggle
+function toggleMobileMenu() {
+    const sidebar = document.getElementById('sidebar');
+    const mobileOverlay = document.getElementById('mobileOverlay');
+    
+    if (sidebar && mobileOverlay) {
+        sidebar.classList.toggle('mobile-open');
+        mobileOverlay.classList.toggle('active');
+    }
+}
+
+// Show notification
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#27ae60' : type === 'error' ? '#e74c3c' : '#3498db'};
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        z-index: 3000;
+        font-weight: 600;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        max-width: 300px;
+    `;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 100);
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}
+
+// Close modals when clicking outside
+document.addEventListener('DOMContentLoaded', function() {
+    const detailsModal = document.getElementById('collectionDetailsModal');
+    
+    if (detailsModal) {
+        detailsModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeCollectionDetails();
+            }
+        });
+    }
+});
+
+// Handle escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeCollectionDetails();
+    }
+});
+
+console.log('EcoWaste Collector Collection History Page Loaded');
+console.log('Total Collection Records:', collectionHistory.length);
+</script>
+</body>
+</html>

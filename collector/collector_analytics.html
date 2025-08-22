@@ -1,0 +1,1567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analytics - EcoWaste Collector</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #f8fafb;
+    color: #2c3e50;
+    overflow-x: hidden;
+}
+
+.dashboard-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    width: 280px;
+    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+    color: white;
+    position: fixed;
+    height: 100vh;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    box-shadow: 2px 0 15px rgba(0,0,0,0.1);
+}
+
+.sidebar.collapsed {
+    width: 70px;
+}
+
+.sidebar-header {
+    padding: 25px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo i {
+    font-size: 28px;
+}
+
+.collapse-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 5px;
+    transition: background 0.3s ease;
+    margin-left: auto;
+}
+
+.collapse-btn:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.sidebar-menu {
+    padding: 20px 0;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    color: rgba(255,255,255,0.8);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    position: relative;
+    gap: 15px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.menu-item:hover {
+    background: rgba(255,255,255,0.1);
+    color: white;
+    transform: translateX(5px);
+}
+
+.menu-item.active {
+    background: rgba(255,255,255,0.15);
+    color: white;
+    border-right: 4px solid #fff;
+}
+
+.menu-item i {
+    font-size: 18px;
+    width: 20px;
+    text-align: center;
+}
+
+.sidebar.collapsed .menu-item span {
+    display: none;
+}
+
+.sidebar.collapsed .logo span {
+    display: none;
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    margin-left: 280px;
+    transition: margin-left 0.3s ease;
+}
+
+.main-content.expanded {
+    margin-left: 70px;
+}
+
+/* Top Navigation */
+.top-nav {
+    background: white;
+    padding: 15px 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.nav-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    cursor: pointer;
+    padding: 8px 15px;
+    border-radius: 25px;
+    transition: background 0.3s ease;
+}
+
+.user-profile:hover {
+    background: #f8f9fa;
+}
+
+.user-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.user-info h4 {
+    font-size: 14px;
+    color: #2c3e50;
+}
+
+.user-info p {
+    font-size: 12px;
+    color: #7f8c8d;
+}
+
+/* Dashboard Content */
+.dashboard-content {
+    padding: 30px;
+}
+
+/* Page Header */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #7f8c8d;
+    font-size: 14px;
+}
+
+.breadcrumb-item {
+    color: #7f8c8d;
+}
+
+.breadcrumb-item.active {
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.quick-actions {
+    display: flex;
+    gap: 15px;
+}
+
+.action-btn-header {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.action-btn-header:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(52, 152, 219, 0.3);
+}
+
+.export-btn {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+}
+
+.export-btn:hover {
+    box-shadow: 0 10px 25px rgba(46, 204, 113, 0.3);
+}
+
+/* Analytics Overview */
+.analytics-overview {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    position: relative;
+    overflow: hidden;
+}
+
+.analytics-overview::before {
+    content: '📊';
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    font-size: 120px;
+    opacity: 0.1;
+}
+
+.analytics-content {
+    position: relative;
+    z-index: 2;
+}
+
+.analytics-title {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.analytics-subtitle {
+    opacity: 0.9;
+    margin-bottom: 25px;
+}
+
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 30px;
+}
+
+.kpi-item {
+    text-align: center;
+}
+
+.kpi-value {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.kpi-label {
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+.kpi-trend {
+    font-size: 12px;
+    margin-top: 5px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.2);
+}
+
+/* Analytics Tabs */
+.analytics-tabs {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    margin-bottom: 30px;
+    overflow: hidden;
+}
+
+.tab-header {
+    display: flex;
+    background: #fafbfc;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.tab-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-weight: 600;
+    color: #7f8c8d;
+    transition: all 0.3s ease;
+    border-bottom: 3px solid transparent;
+}
+
+.tab-btn.active {
+    color: #2c3e50;
+    background: white;
+    border-bottom-color: #3498db;
+}
+
+.tab-content {
+    padding: 30px;
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Charts Grid */
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.chart-container {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.chart-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.chart-subtitle {
+    color: #7f8c8d;
+    font-size: 14px;
+    margin-top: 2px;
+}
+
+.chart-canvas {
+    width: 100% !important;
+    height: 300px !important;
+}
+
+/* Performance Cards */
+.performance-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.performance-card {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.performance-card:hover {
+    transform: translateY(-5px);
+}
+
+.performance-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+    font-size: 24px;
+    color: white;
+}
+
+.icon-efficiency { background: linear-gradient(135deg, #667eea, #764ba2); }
+.icon-revenue { background: linear-gradient(135deg, #f093fb, #f5576c); }
+.icon-customer { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+.icon-environmental { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+
+.performance-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+
+.performance-label {
+    color: #7f8c8d;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.performance-trend {
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.trend-up {
+    background: #d4edda;
+    color: #155724;
+}
+
+.trend-down {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.trend-stable {
+    background: #fff3cd;
+    color: #856404;
+}
+
+/* Insights Section */
+.insights-section {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    margin-bottom: 30px;
+}
+
+.insights-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.section-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.insight-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    padding: 15px 0;
+    border-bottom: 1px solid #f8f9fa;
+}
+
+.insight-item:last-child {
+    border-bottom: none;
+}
+
+.insight-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.insight-icon.positive { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+.insight-icon.warning { background: linear-gradient(135deg, #f39c12, #e67e22); }
+.insight-icon.info { background: linear-gradient(135deg, #3498db, #2980b9); }
+
+.insight-content h4 {
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+
+.insight-content p {
+    color: #7f8c8d;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Comparison Table */
+.comparison-table {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    overflow: hidden;
+}
+
+.table-header {
+    background: #fafbfc;
+    padding: 20px 25px;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th {
+    text-align: left;
+    padding: 15px 20px;
+    background: #fafbfc;
+    border-bottom: 1px solid #f1f3f4;
+    font-weight: 600;
+    color: #555;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.data-table td {
+    padding: 15px 20px;
+    border-bottom: 1px solid #f8f9fa;
+    color: #555;
+    vertical-align: middle;
+}
+
+.data-table tr:hover {
+    background: #f8f9fa;
+}
+
+.metric-value {
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.metric-change {
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+    margin-left: 8px;
+}
+
+.change-positive {
+    background: #d4edda;
+    color: #155724;
+}
+
+.change-negative {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Mobile Responsive */
+.mobile-menu-btn {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        width: 70px;
+        transform: translateX(-100%);
+    }
+    
+    .sidebar.mobile-open {
+        transform: translateX(0);
+        width: 280px;
+    }
+    
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    .main-content.expanded {
+        margin-left: 0;
+    }
+
+    .dashboard-content {
+        padding: 15px;
+    }
+
+    .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .performance-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .tab-header {
+        flex-direction: column;
+    }
+
+    .mobile-menu-btn {
+        display: block;
+        background: none;
+        border: none;
+        color: #2c3e50;
+        font-size: 20px;
+        cursor: pointer;
+        padding: 5px;
+        border-radius: 5px;
+        margin-right: 15px;
+    }
+
+    .mobile-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 999;
+    }
+
+    .mobile-overlay.active {
+        display: block;
+    }
+}
+</style>
+</head>
+<body>
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    <body>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-leaf"></i>
+                <span>EcoWaste</span>
+            </div>
+            <button class="collapse-btn" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+        <nav class="sidebar-menu">
+            <a href="collector_dashboard (3).html" class="menu-item">
+                <i class="fas fa-chart-pie"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="collector_assigned_pickups.html" class="menu-item">
+                <i class="fas fa-truck"></i>
+                <span>Assigned Pickups</span>
+            </a>
+            <a href="collector_collection_history (3).html" class="menu-item">
+                <i class="fas fa-history"></i>
+                <span>Collection History</span>
+            </a>
+            <a href="collector_earnings (2).html" class="menu-item">
+                <i class="fas fa-money-bill-wave"></i>
+                <span>Earnings</span>
+            </a>
+            <a href="collector_analytics.html" class="menu-item active">
+                <i class="fas fa-chart-bar"></i>
+                <span>Analytics</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <!-- Top Navigation -->
+        <div class="top-nav">
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h1 class="nav-title">Analytics</h1>
+            <div class="user-profile">
+                <div class="user-avatar">JC</div>
+                <div class="user-info">
+                    <h4>John Collector</h4>
+                    <p>Waste Collector</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="breadcrumbs">
+                    <span class="breadcrumb-item">Collector</span>
+                    <i class="fas fa-chevron-right"></i>
+                    <span class="breadcrumb-item active">Analytics</span>
+                </div>
+                <div class="quick-actions">
+                    <button class="action-btn-header export-btn" onclick="exportAnalytics()">
+                        <i class="fas fa-download"></i> Export Analytics
+                    </button>
+                    <button class="action-btn-header" onclick="generateInsights()">
+                        <i class="fas fa-brain"></i> AI Insights
+                    </button>
+                </div>
+            </div>
+
+            <!-- Analytics Overview -->
+            <div class="analytics-overview">
+                <div class="analytics-content">
+                    <h2 class="analytics-title">Performance Analytics 📊</h2>
+                    <p class="analytics-subtitle">Deep insights into your collection performance and optimization opportunities</p>
+                    <div class="kpi-grid">
+                        <div class="kpi-item">
+                            <div class="kpi-value" id="efficiencyScore">94.2%</div>
+                            <div class="kpi-label">Efficiency Score</div>
+                            <div class="kpi-trend">+2.3% this month</div>
+                        </div>
+                        <div class="kpi-item">
+                            <div class="kpi-value" id="revenueGrowth">+18.5%</div>
+                            <div class="kpi-label">Revenue Growth</div>
+                            <div class="kpi-trend">vs last quarter</div>
+                        </div>
+                        <div class="kpi-item">
+                            <div class="kpi-value" id="customerSatisfaction">4.9/5</div>
+                            <div class="kpi-label">Customer Rating</div>
+                            <div class="kpi-trend">98% satisfaction</div>
+                        </div>
+                        <div class="kpi-item">
+                            <div class="kpi-value" id="environmentalImpact">2.8T</div>
+                            <div class="kpi-label">CO₂ Saved</div>
+                            <div class="kpi-trend">environmental impact</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Tabs -->
+            <div class="analytics-tabs">
+                <div class="tab-header">
+                    <button class="tab-btn active" onclick="switchTab('performance')" data-tab="performance">
+                        <i class="fas fa-tachometer-alt"></i>
+                        Performance
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('trends')" data-tab="trends">
+                        <i class="fas fa-chart-line"></i>
+                        Trends
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('optimization')" data-tab="optimization">
+                        <i class="fas fa-cogs"></i>
+                        Optimization
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('comparison')" data-tab="comparison">
+                        <i class="fas fa-balance-scale"></i>
+                        Comparison
+                    </button>
+                </div>
+
+                <!-- Performance Tab -->
+                <div class="tab-content active" id="performanceTab">
+                    <!-- Performance Cards -->
+                    <div class="performance-cards">
+                        <div class="performance-card">
+                            <div class="performance-icon icon-efficiency">
+                                <i class="fas fa-gauge-high"></i>
+                            </div>
+                            <div class="performance-value">87.3%</div>
+                            <div class="performance-label">Collection Efficiency</div>
+                            <div class="performance-trend trend-up">+5.2% vs last month</div>
+                        </div>
+                        <div class="performance-card">
+                            <div class="performance-icon icon-revenue">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="performance-value">$42.5</div>
+                            <div class="performance-label">Avg Revenue/Collection</div>
+                            <div class="performance-trend trend-up">+8.1% improvement</div>
+                        </div>
+                        <div class="performance-card">
+                            <div class="performance-icon icon-customer">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="performance-value">96.7%</div>
+                            <div class="performance-label">On-Time Performance</div>
+                            <div class="performance-trend trend-stable">Consistent</div>
+                        </div>
+                        <div class="performance-card">
+                            <div class="performance-icon icon-environmental">
+                                <i class="fas fa-leaf"></i>
+                            </div>
+                            <div class="performance-value">425kg</div>
+                            <div class="performance-label">Daily Avg Collection</div>
+                            <div class="performance-trend trend-up">+12.3% growth</div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Grid -->
+                    <div class="charts-grid">
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <div>
+                                    <h3 class="chart-title">Collection Efficiency Trend</h3>
+                                    <p class="chart-subtitle">Daily efficiency over the last 30 days</p>
+                                </div>
+                            </div>
+                            <canvas id="efficiencyChart" class="chart-canvas"></canvas>
+                        </div>
+
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <div>
+                                    <h3 class="chart-title">Revenue per Waste Type</h3>
+                                    <p class="chart-subtitle">Breakdown by category</p>
+                                </div>
+                            </div>
+                            <canvas id="revenueChart" class="chart-canvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trends Tab -->
+                <div class="tab-content" id="trendsTab">
+                    <div class="charts-grid">
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <div>
+                                    <h3 class="chart-title">Collection Volume Trends</h3>
+                                    <p class="chart-subtitle">Weekly collection volumes over 6 months</p>
+                                </div>
+                            </div>
+                            <canvas id="volumeChart" class="chart-canvas"></canvas>
+                        </div>
+
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <div>
+                                    <h3 class="chart-title">Customer Rating Trends</h3>
+                                    <p class="chart-subtitle">Average ratings over time</p>
+                                </div>
+                            </div>
+                            <canvas id="ratingChart" class="chart-canvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Optimization Tab -->
+                <div class="tab-content" id="optimizationTab">
+                    <!-- AI Insights -->
+                    <div class="insights-section">
+                        <div class="insights-header">
+                            <i class="fas fa-lightbulb" style="color: #f39c12;"></i>
+                            <h3 class="section-title">AI-Powered Insights & Recommendations</h3>
+                        </div>
+                        <div id="insightsContainer">
+                            <!-- Insights will be loaded here -->
+                        </div>
+                    </div>
+
+                    <div class="charts-grid">
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <div>
+                                    <h3 class="chart-title">Route Optimization</h3>
+                                    <p class="chart-subtitle">Time vs Distance analysis</p>
+                                </div>
+                            </div>
+                            <canvas id="routeChart" class="chart-canvas"></canvas>
+                        </div>
+
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <div>
+                                    <h3 class="chart-title">Peak Performance Hours</h3>
+                                    <p class="chart-subtitle">Efficiency by time of day</p>
+                                </div>
+                            </div>
+                            <canvas id="timeChart" class="chart-canvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comparison Tab -->
+                <div class="tab-content" id="comparisonTab">
+                    <div class="comparison-table">
+                        <div class="table-header">
+                            <h3 class="section-title">
+                                <i class="fas fa-balance-scale"></i>
+                                Performance Comparison
+                            </h3>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Metric</th>
+                                    <th>Your Performance</th>
+                                    <th>Team Average</th>
+                                    <th>Top Performer</th>
+                                    <th>Change</th>
+                                </tr>
+                            </thead>
+                            <tbody id="comparisonTableBody">
+                                <!-- Comparison data will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mobile Overlay -->
+<div class="mobile-overlay" id="mobileOverlay" onclick="toggleMobileMenu()"></div>
+
+<script>
+// Analytics data
+let analyticsData = {
+    performance: {
+        efficiency: 87.3,
+        avgRevenue: 42.5,
+        onTimePerformance: 96.7,
+        dailyAvgCollection: 425
+    },
+    trends: {
+        efficiencyTrend: [82, 84, 86, 87, 89, 88, 87, 89, 91, 90, 88, 87],
+        volumeTrend: [380, 420, 450, 425, 480, 520, 495, 510, 485, 530, 515, 525],
+        ratingTrend: [4.6, 4.7, 4.8, 4.7, 4.9, 4.8, 4.9, 4.9, 5.0, 4.8, 4.9, 4.9]
+    },
+    comparison: [
+        { metric: 'Collections/Day', you: '3.2', team: '2.8', top: '4.1', change: '+12%' },
+        { metric: 'Avg Revenue', you: '$42.50', team: '$38.20', top: '$48.30', change: '+8%' },
+        { metric: 'Efficiency', you: '87.3%', team: '82.1%', top: '94.2%', change: '+5%' },
+        { metric: 'Customer Rating', you: '4.9', team: '4.6', top: '5.0', change: '+3%' },
+        { metric: 'On-Time Rate', you: '96.7%', team: '89.3%', top: '98.1%', change: '+2%' }
+    ]
+};
+
+let charts = {};
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    loadInsights();
+    loadComparisonTable();
+    initializeCharts();
+});
+
+// Load AI insights
+function loadInsights() {
+    const insights = [
+        {
+            type: 'positive',
+            title: 'Excellent E-Waste Performance',
+            description: 'Your e-waste collection efficiency is 23% above team average. Consider specializing in this high-value category.'
+        },
+        {
+            type: 'warning',
+            title: 'Route Optimization Opportunity',
+            description: 'You could save 15 minutes per day by optimizing your Tuesday routes. Consider clustering pickups in the north district.'
+        },
+        {
+            type: 'info',
+            title: 'Peak Performance Window',
+            description: 'Your efficiency peaks between 9-11 AM. Schedule high-value pickups during this time for maximum revenue.'
+        },
+        {
+            type: 'positive',
+            title: 'Customer Satisfaction Trend',
+            description: 'Your rating has improved 0.3 points this quarter. Customers appreciate your punctuality and professionalism.'
+        }
+    ];
+
+    const container = document.getElementById('insightsContainer');
+    container.innerHTML = insights.map(insight => `
+        <div class="insight-item">
+            <div class="insight-icon ${insight.type}">
+                <i class="fas fa-${insight.type === 'positive' ? 'thumbs-up' : insight.type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+            </div>
+            <div class="insight-content">
+                <h4>${insight.title}</h4>
+                <p>${insight.description}</p>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Load comparison table
+function loadComparisonTable() {
+    const tbody = document.getElementById('comparisonTableBody');
+    
+    tbody.innerHTML = analyticsData.comparison.map(row => `
+        <tr>
+            <td><strong>${row.metric}</strong></td>
+            <td class="metric-value">${row.you}</td>
+            <td>${row.team}</td>
+            <td>${row.top}</td>
+            <td>
+                <span class="metric-change ${row.change.startsWith('+') ? 'change-positive' : 'change-negative'}">
+                    ${row.change}
+                </span>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// Initialize all charts
+function initializeCharts() {
+    initializeEfficiencyChart();
+    initializeRevenueChart();
+    initializeVolumeChart();
+    initializeRatingChart();
+    initializeRouteChart();
+    initializeTimeChart();
+}
+
+// Efficiency Chart
+function initializeEfficiencyChart() {
+    const ctx = document.getElementById('efficiencyChart').getContext('2d');
+    
+    const labels = [];
+    for (let i = 29; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        labels.push(date.getDate());
+    }
+    
+    // Generate realistic efficiency data
+    const data = [];
+    for (let i = 0; i < 30; i++) {
+        const base = 85;
+        const variation = Math.sin(i / 5) * 8 + Math.random() * 6 - 3;
+        data.push(Math.max(75, Math.min(95, base + variation)));
+    }
+    
+    charts.efficiency = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Efficiency %',
+                data: data,
+                borderColor: '#667eea',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    min: 70,
+                    max: 100,
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Revenue Chart (Doughnut)
+function initializeRevenueChart() {
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+    
+    charts.revenue = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['E-Waste', 'Metal', 'Plastic', 'Paper', 'Glass', 'Organic'],
+            datasets: [{
+                data: [35, 22, 18, 12, 8, 5],
+                backgroundColor: [
+                    '#2ecc71',
+                    '#f39c12',
+                    '#e74c3c',
+                    '#9b59b6',
+                    '#3498db',
+                    '#1abc9c'
+                ],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.label + ': ' + context.parsed + '%';
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Volume Chart
+function initializeVolumeChart() {
+    const ctx = document.getElementById('volumeChart').getContext('2d');
+    
+    const labels = [];
+    for (let i = 23; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - (i * 7));
+        labels.push('Week ' + (24 - i));
+    }
+    
+    // Generate volume data with growth trend
+    const data = [];
+    for (let i = 0; i < 24; i++) {
+        const base = 400 + (i * 3); // Growth trend
+        const seasonal = Math.sin((i / 24) * Math.PI * 2) * 50;
+        const random = Math.random() * 40 - 20;
+        data.push(Math.max(300, base + seasonal + random));
+    }
+    
+    charts.volume = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Collection Volume (kg)',
+                data: data,
+                backgroundColor: 'rgba(46, 204, 113, 0.8)',
+                borderColor: '#27ae60',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value + ' kg';
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Rating Chart
+function initializeRatingChart() {
+    const ctx = document.getElementById('ratingChart').getContext('2d');
+    
+    const labels = [];
+    for (let i = 11; i >= 0; i--) {
+        const date = new Date();
+        date.setMonth(date.getMonth() - i);
+        labels.push(date.toLocaleDateString('en-US', { month: 'short' }));
+    }
+    
+    // Generate rating data
+    const data = [];
+    for (let i = 0; i < 12; i++) {
+        const base = 4.5 + (i * 0.03); // Slight improvement trend
+        const variation = Math.random() * 0.4 - 0.2;
+        data.push(Math.max(4.0, Math.min(5.0, base + variation)));
+    }
+    
+    charts.rating = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Average Rating',
+                data: data,
+                borderColor: '#f093fb',
+                backgroundColor: 'rgba(240, 147, 251, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#f093fb',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    min: 4.0,
+                    max: 5.0,
+                    ticks: {
+                        stepSize: 0.2,
+                        callback: function(value) {
+                            return value.toFixed(1) + ' ⭐';
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Route Chart (Scatter)
+function initializeRouteChart() {
+    const ctx = document.getElementById('routeChart').getContext('2d');
+    
+    // Generate route optimization data
+    const data = [];
+    for (let i = 0; i < 20; i++) {
+        data.push({
+            x: Math.random() * 60 + 20, // Time (20-80 minutes)
+            y: Math.random() * 30 + 10   // Distance (10-40 km)
+        });
+    }
+    
+    charts.route = new Chart(ctx, {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: 'Route Efficiency',
+                data: data,
+                backgroundColor: 'rgba(52, 152, 219, 0.6)',
+                borderColor: '#3498db',
+                borderWidth: 2,
+                pointRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Time (minutes)'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Distance (km)'
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Time Chart (Radar)
+function initializeTimeChart() {
+    const ctx = document.getElementById('timeChart').getContext('2d');
+    
+    const timeLabels = ['6 AM', '8 AM', '10 AM', '12 PM', '2 PM', '4 PM', '6 PM', '8 PM'];
+    const efficiencyData = [65, 85, 95, 88, 82, 90, 75, 45];
+    
+    charts.time = new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: timeLabels,
+            datasets: [{
+                label: 'Efficiency %',
+                data: efficiencyData,
+                borderColor: '#43e97b',
+                backgroundColor: 'rgba(67, 233, 123, 0.2)',
+                borderWidth: 2,
+                pointBackgroundColor: '#43e97b',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        stepSize: 20,
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Switch tabs
+function switchTab(tabName) {
+    // Update active tab button
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+    
+    // Update active tab content
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    document.getElementById(tabName + 'Tab').classList.add('active');
+    
+    // Trigger chart updates for visible charts
+    setTimeout(() => {
+        Object.values(charts).forEach(chart => {
+            if (chart && chart.resize) {
+                chart.resize();
+            }
+        });
+    }, 100);
+}
+
+// Export analytics
+function exportAnalytics() {
+    const reportData = {
+        performance: analyticsData.performance,
+        insights: [
+            'E-waste collection efficiency 23% above average',
+            'Route optimization could save 15 minutes daily',
+            'Peak performance window: 9-11 AM',
+            'Customer satisfaction improved 0.3 points'
+        ],
+        recommendations: [
+            'Focus on high-value e-waste collections',
+            'Optimize Tuesday routes in north district',
+            'Schedule premium pickups during peak hours',
+            'Continue excellent customer service practices'
+        ]
+    };
+
+    const reportHTML = `
+        <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px;">
+            <h1 style="color: #2c3e50; text-align: center; margin-bottom: 30px;">Performance Analytics Report</h1>
+            <p style="text-align: center; color: #7f8c8d; margin-bottom: 40px;">
+                Generated on ${new Date().toLocaleDateString()} for John Collector
+            </p>
+            
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 40px;">
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center;">
+                    <h3 style="color: #2c3e50; margin-bottom: 10px;">${reportData.performance.efficiency}%</h3>
+                    <p style="color: #7f8c8d;">Collection Efficiency</p>
+                </div>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center;">
+                    <h3 style="color: #27ae60; margin-bottom: 10px;">${reportData.performance.avgRevenue}</h3>
+                    <p style="color: #7f8c8d;">Avg Revenue/Collection</p>
+                </div>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center;">
+                    <h3 style="color: #2c3e50; margin-bottom: 10px;">${reportData.performance.onTimePerformance}%</h3>
+                    <p style="color: #7f8c8d;">On-Time Performance</p>
+                </div>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center;">
+                    <h3 style="color: #2c3e50; margin-bottom: 10px;">${reportData.performance.dailyAvgCollection}kg</h3>
+                    <p style="color: #7f8c8d;">Daily Avg Collection</p>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 30px;">
+                <h3 style="color: #2c3e50; margin-bottom: 15px;">Key Insights</h3>
+                <ul style="color: #555; line-height: 1.8;">
+                    ${reportData.insights.map(insight => `<li>${insight}</li>`).join('')}
+                </ul>
+            </div>
+            
+            <div style="margin-bottom: 30px;">
+                <h3 style="color: #2c3e50; margin-bottom: 15px;">Recommendations</h3>
+                <ul style="color: #555; line-height: 1.8;">
+                    ${reportData.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                </ul>
+            </div>
+        </div>
+    `;
+
+    const newWindow = window.open('', '_blank');
+    newWindow.document.write(reportHTML);
+    newWindow.document.close();
+    newWindow.print();
+
+    showNotification('Analytics report generated!', 'success');
+}
+
+// Generate AI insights
+function generateInsights() {
+    showNotification('Analyzing your performance data...', 'info');
+    
+    setTimeout(() => {
+        const newInsights = [
+            {
+                type: 'info',
+                title: 'Weather Impact Analysis',
+                description: 'Rainy days reduce your efficiency by 12%. Consider adjusting schedules during forecasted rain.'
+            },
+            {
+                type: 'positive',
+                title: 'Upselling Opportunity',
+                description: 'Customers with mixed waste types tip 18% more. Suggest comprehensive collection services.'
+            }
+        ];
+        
+        // Add new insights to existing ones
+        const container = document.getElementById('insightsContainer');
+        newInsights.forEach(insight => {
+            const insightElement = document.createElement('div');
+            insightElement.className = 'insight-item';
+            insightElement.innerHTML = `
+                <div class="insight-icon ${insight.type}">
+                    <i class="fas fa-${insight.type === 'positive' ? 'lightbulb' : 'brain'}"></i>
+                </div>
+                <div class="insight-content">
+                    <h4>${insight.title} <span style="background: #e74c3c; color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; margin-left: 8px;">NEW</span></h4>
+                    <p>${insight.description}</p>
+                </div>
+            `;
+            container.appendChild(insightElement);
+        });
+        
+        showNotification('New AI insights generated!', 'success');
+    }, 2000);
+}
+
+// Navigation functions
+function showSection(section) {
+    showNotification(`${section.replace('-', ' ')} section would load here.`, 'info');
+}
+
+function logout() {
+    if (confirm('Are you sure you want to logout?')) {
+        showNotification('Logging out...', 'info');
+        setTimeout(() => {
+            window.location.href = 'login.html';
+        }, 1500);
+    }
+}
+
+// Sidebar toggle
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+    
+    if (sidebar && mainContent) {
+        sidebar.classList.toggle('collapsed');
+        mainContent.classList.toggle('expanded');
+    }
+}
+
+// Mobile menu toggle
+function toggleMobileMenu() {
+    const sidebar = document.getElementById('sidebar');
+    const mobileOverlay = document.getElementById('mobileOverlay');
+    
+    if (sidebar && mobileOverlay) {
+        sidebar.classList.toggle('mobile-open');
+        mobileOverlay.classList.toggle('active');
+    }
+}
+
+// Show notification
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#27ae60' : type === 'error' ? '#e74c3c' : '#3498db'};
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        z-index: 3000;
+        font-weight: 600;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        max-width: 300px;
+    `;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 100);
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}
+
+console.log('EcoWaste Collector Analytics Page Loaded');
+</script>
+</body>
+</html>
